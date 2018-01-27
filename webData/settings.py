@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'plotting',
+    'snippets',
     'rest_framework',
 ]
 
@@ -82,7 +83,7 @@ DATABASES = {
     },
     'market_data': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': "C:/Users/j291414/Desktop/market_data.db",
+        'NAME': "C:/Users/Jimmy/Documents/GitHub/webData/market_data.db",
     }
 }
 
@@ -113,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'SGT'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 

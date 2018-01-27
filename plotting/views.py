@@ -1,26 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render
-from django.http import Http404
+from datetime import datetime
 from .models import FutDaily
 from .serializers import FutDailySerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 
 
-# Create your views here.
-class FutDetail(APIView):
-    def get_contract(self, instID):
-        try:
-            return FutDaily.objects.filter(instID=instID)
-        except FutDaily.DoesNotExist:
-            return Http404
+from rest_framework import generics
 
 
-    def get(self, request, instID, format=None):
-        fut = self.get_contract(instID)
-        serializer = FutDailySerializer(fut, many=True)
-        return Response(serializer.data)
+class FutList(generics.ListAPIView):
+    serializer_class = FutDailySerializer
+
+    def get_queryset(self):
+        queryset = FutDaily.objects.filter(date__gte=datetime(2017, 12, 12))
+        instID = self.request.query_params.get('instid', None)
+        start = self.request.query_params.get('start', None)
+        if instID:
+            queryset = queryset.filter(instID=instID)
+        if start:
+            queryset = queryset.filter(date__gte=datetime.strptime(start, "%Y%m%d"))
+        return queryset
 
