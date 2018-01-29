@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.FutList.as_view()),
+    url(r'^index/$', views.Charter.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

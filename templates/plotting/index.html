@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plotting</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+</head>
+
+<body>
+
+<h1> Index Page </h1>
+<p> This page tests plotting API returned data with Plotly</p>
+<div class="row">
+    <div id="articles" style="width:1400px;height:800px"></div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        var endpoint = "/plotting/?format=json&instid=rb1805&start=20171231";
+        $.ajax({
+            method: "GET",
+            url: endpoint,
+            success: function(data){
+                var dates = getDates(data);
+                var prices = getPrices(data);
+                plot(dates, prices);
+            },
+        });
+    });
+
+    function getDates(data){
+        var dates = [];
+        for (var i in data){
+            dates.push(data[i]['date']);
+        };
+        return dates
+    };
+
+    function getPrices(data){
+        var prices = [];
+        for (var i in data){
+            prices.push(data[i]['close']);
+        };
+        return prices
+    };
+
+    function plot(dates, prices){
+        var data = [{
+            x: dates,
+            y: prices,
+        }];
+        Plotly.newPlot('articles', data);
+    };
+</script>
+
+
+</body>
+</html>

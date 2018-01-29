@@ -14,6 +14,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 
 
 # Quick-start development settings - unsuitable for production
@@ -57,7 +58,7 @@ ROOT_URLCONF = 'webData.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -83,7 +84,7 @@ DATABASES = {
     },
     'market_data': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': "C:/Users/Jimmy/Documents/GitHub/webData/market_data.db",
+        'NAME': "C:/Users/j291414/Desktop/market_data.db",
     }
 }
 
@@ -120,7 +121,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
