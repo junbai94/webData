@@ -2,20 +2,27 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
+import pandas as pd
+
+# include classes we need
 from .models import FutDaily
 from .serializers import FutDailySerializer
+from .forms import FutDailyForm
 
 # REST framework class views
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework import generics
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-# filters
-# from url_filter.integrations.drf import DjangoFilterBackend
-
-
+#############################################################################################
+# APIs
+#############################################################################################
 class FutList(generics.ListAPIView):
+    """
+    Return multiple price lists of futures
+    """
     serializer_class = FutDailySerializer
 
     def get_queryset(self):
@@ -36,9 +43,25 @@ class FutList(generics.ListAPIView):
         return queryset
 
 
+class FutSpread(APIView):
+    """
+    Return the spread of close prices between two futures
+    """
+    def get(self, request, format=None):
+        queryset = FutDaily.objects.filter(instID='i1805').filter(date__gte=datetime(2017,12 ,31))
+        df = pd.DataFrame.from_records(queryset.values())
+        data = df.to_dict(orient='records')
+        return Response(data)
+
+
+#############################################################################################
+# Views
+#############################################################################################
 class Charter(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'plotting/index.html'
 
     def get(self, request):
-        return Response({})
+        form = FutDailyForm()
+        return Response({'form': form})
+

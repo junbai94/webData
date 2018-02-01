@@ -12,22 +12,51 @@
 <h1> Index Page </h1>
 <p> This page tests plotting API returned data with Plotly</p>
 <div class="row">
-    <div id="articles" style="width:1400px;height:800px"></div>
+    <div id="articles" style="width:1200px;height:800px"></div>
+</div>
+<div class="row">
+    <form action="/plotting/" method="get">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit" />
+    </form>
 </div>
 
 <script>
+
     $(document).ready(function(){
         var endpoint = "/plotting/?format=json&instid=rb1805&start=20171231";
         $.ajax({
             method: "GET",
             url: endpoint,
             success: function(data){
+                console.log(data);
                 var dates = getDates(data);
                 var prices = getPrices(data);
                 plot(dates, prices);
             },
         });
     });
+
+
+
+    /*
+    $(document).ready(function(){
+        var endpoint = "/plotting/spread/?format=json";
+        $.ajax({
+            method: "GET",
+            url: endpoint,
+            success: function(data){
+                console.log(data);
+                var dates = getDates(data);
+                var prices = getPrices(data);
+                plot(dates, prices);
+            },
+        });
+    });
+    */
+
+
 
     function getDates(data){
         var dates = [];
