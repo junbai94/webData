@@ -7,30 +7,30 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     {% load static %}
     <script src="{% static 'utils.js' %}"></script>
-
 </head>
 
 <body>
 
-<h1> Index Page </h1>
-<p> This page tests plotting API returned data with Plotly</p>
-
 <!-- auto populated by JQuery. Each child node is a Plot -->
 <div class="container-fluid">
+    <div class="jumbotron"><h1 class="text-center">Index page</h1></div>
 </div>
-
-
+<div id="test"></div>
 
 <script>
     $(document).ready(function(){
         var endpoint = "/plotting/spread/?format=json&technical=BBANDS&instid=";
         var pairs = {{pairs|safe}};
+
+        // plot out all pairs
         $.each(pairs, function(i, item){
             var dest = endpoint + item;
-            $(".container-fluid").append("<div class='col-sm-4'><div id="+i+"></div></div>")
+            var div = $("<div class='col-sm-4 well'><div id="+i+"></div></div>");
+            $(".container-fluid").append(div);
+            var r = $('<input type="button" value="Detail" class="btn"/>');
+            r.appendTo(div);
             $.ajax({
                 method: "GET",
                 url: dest,
@@ -38,20 +38,18 @@
                     array = item.split(',');
                     title = array[0] + " vs " + array[1];
                     plotBBANDS(String(i), data, 'date', 'spread', 9, title);
-                    foo();
                 },
             });
         });
+
+        // re-direct to details
+        $(".btn").click(function(event){
+            var id = $(event.target).prev().attr('id');
+            var pair = pairs[id];
+            $(location).attr('href', "/plotting/spread/?instid=" + pair);
+        });
     });
-
-
-
-
-
-
-
 </script>
-
 
 </body>
 </html>
