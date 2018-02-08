@@ -66,3 +66,8 @@ function plot(dest, dates, prices, title=null){
     }
     Plotly.newPlot(dest, data, layout);
 };
+
+
+function foo(){
+    console.log('haha');
+};

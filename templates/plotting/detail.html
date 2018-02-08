@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Plotting</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    {% load static %}
+    <script src="{% static 'new.js' %}"></script>
+</head>
+
+<body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container">
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="{% url 'index' %}">Home</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="jumbotron"><h1 class="text-center">Details</h1></div>
+    <!-- graph plotting by JQuery -->
+    <div class="row">
+        <div class="col-sm-6 well"><div id="graph"></div></div>
+        <div class="col-sm-6 well"><div id="scatter"></div></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6 well"><div id="resid"></div></div>
+        <div class="col-sm-6 well">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Slope</td>
+                        <td id="k"></td>
+                    </tr>
+                    <tr>
+                        <td>Intecept</td>
+                        <td id="b"></td>
+                    </tr>
+                    <tr>
+                        <td>R square</td>
+                        <td id="rsqr"></td>
+                    </tr>
+                    <tr>
+                        <td>Model std</td>
+                        <td id="std"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function(){
+        var pair = "{{pair}}";
+        var start = "{{start}}";
+        var end = "{{end}}";
+        var endpoint = dateRange("/plotting/regression/?", start, end);
+        pair = pair.split(',');
+        dep = pair[0];
+        indep = pair[1];
+
+        // get regression whole package
+        $.ajax({
+            method: "GET",
+            url: endpoint + pair,
+            success: function(output){
+                data = output.data;
+                package = output.package;
+                plot('graph', data, 'date', [dep, indep], 'Prices');
+                plotSpread('resid', data, package, title='Residual');
+
+                $.each(package, function(i, item){
+                    item = item.toFixed(2);
+                    $("#"+i).html(item);
+                });
+                //console.log(data);
+            },
+        });
+
+    });
+</script>
+
+</body>
+</html>

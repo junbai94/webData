@@ -8,20 +8,28 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     {% load static %}
-    <script src="{% static 'utils.js' %}"></script>
+    <script src="{% static 'new.js' %}"></script>
 </head>
 
 <body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container">
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="{% url 'index' %}">Home</a></li>
+        </ul>
+    </div>
+</nav>
 
 <!-- auto populated by JQuery. Each child node is a Plot -->
 <div class="container-fluid">
     <div class="jumbotron"><h1 class="text-center">Index page</h1></div>
 </div>
-<div id="test"></div>
+
 
 <script>
     $(document).ready(function(){
-        var endpoint = "/plotting/spread/?format=json&technical=BBANDS&instid=";
+        var endpoint = "/plotting/spread/?format=json&technical=BBANDS&id=";
         var pairs = {{pairs|safe}};
 
         // plot out all pairs
@@ -35,8 +43,9 @@
                 method: "GET",
                 url: dest,
                 success: function(data){
+                    //console.log(data);
                     array = item.split(',');
-                    title = array[0] + " vs " + array[1];
+                    title = validName(array[0]) + " vs " + validName(array[1]);
                     plotBBANDS(String(i), data, 'date', 'spread', 9, title);
                 },
             });
@@ -46,7 +55,7 @@
         $(".btn").click(function(event){
             var id = $(event.target).prev().attr('id');
             var pair = pairs[id];
-            $(location).attr('href', "/plotting/spread/?instid=" + pair);
+            $(location).attr('href', "/plotting/detail/?id=" + pair);
         });
     });
 </script>
