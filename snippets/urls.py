@@ -15,6 +15,7 @@ from . import views
 urlpatterns = [
     url(r'^snippets/$', views.SnippetList.as_view()),
     url(r'^snippets/(?P<pk>[0-9]+)/$', views.SnippetDetail.as_view()),
+    url(r'^index/$', views.Index.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

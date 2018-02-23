@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Plotting</title>
+    <title>Detail</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- Bootstrap Date-Picker Plugin -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
+
     {% load static %}
     <script src="{% static 'new.js' %}"></script>
 </head>
@@ -22,7 +29,33 @@
 </nav>
 
 <div class="container-fluid">
-    <div class="jumbotron"><h1 class="text-center">Details</h1></div>
+    <div class="jumbotron"><h1 class="text-center">Regression Details</h1></div>
+
+    <!-- date picker -->
+    <div class="row">
+        <div class="col-sm-3 well">
+            <label>Start Date: </label>
+            <div class="input-group date" data-date-format="dd.mm.yyyy">
+                <input  type="text" class="form-control" placeholder="yyyymmdd" id="start">
+                <div class="input-group-addon" >
+                  <span class="glyphicon glyphicon-th"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3 well">
+            <label>End Date: </label>
+            <div class="input-group date" data-date-format="dd.mm.yyyy">
+                <input  type="text" class="form-control" placeholder="yyyymmdd" id="end">
+                <div class="input-group-addon" >
+                  <span class="glyphicon glyphicon-th"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <button type="button" class="btn btn-default">Calculate</button>
+        </div>
+    </div>
+
     <!-- graph plotting by JQuery -->
     <div class="row">
         <div class="col-sm-6 well"><div id="graph"></div></div>
@@ -55,22 +88,48 @@
                         <td>Model std</td>
                         <td id="std"></td>
                     </tr>
+                    <tr>
+                        <td>Mean Reversion</td>
+                        <td id="reversion"></td>
+                    </tr>
+                    <tr>
+                        <td>Mean-reversion Period</td>
+                        <td id="period"></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <hr class="style2" />
+
+    <!-- spread graph here -->
+    <!--
+    <div class="jumbotron"><h1 class="text-center">Spread Graph</h1></div>
+    <div class="row">
+        <div class="col-sm-12 well"><div id="spread"></div></div>
+    </div>
+    //-->
+
+    <!-- page footer -->
+    <ul class="pager">
+        <li><a href="#">Top</a></li>
+    </ul>
 </div>
 
 
 <script>
     $(document).ready(function(){
+        $('.input-group.date').datepicker({format: "yyyymmdd"});
+
         var pair = "{{pair}}";
         var start = "{{start}}";
         var end = "{{end}}";
         var endpoint = dateRange("/plotting/regression/?", start, end);
         pair = pair.split(',');
-        dep = pair[0];
-        indep = pair[1];
+        dep = validName(pair[0]);
+        indep = validName(pair[1]);
+        var price = [dep, indep];
 
         // get regression whole package
         $.ajax({
@@ -79,18 +138,35 @@
             success: function(output){
                 data = output.data;
                 package = output.package;
-                plot('graph', data, 'date', [dep, indep], 'Prices');
-                plotSpread('resid', data, package, title='Residual');
+                console.log(package);
+                // plotting graphs
+                plotSpread('resid', data, package, title='Residual');   // Residual plot
+                plot('graph', data, 'date', [dep, indep], title='Price Graphs');         // Price Plot
+                plotScatter('scatter', data, package, 'date', [dep, indep], title='Scatter Plot');     // Scatter Plot
 
+                // populate the table
                 $.each(package, function(i, item){
-                    item = item.toFixed(2);
+                    if ($.type(item) != 'string'){
+                        item = item.toFixed(2)};
                     $("#"+i).html(item);
                 });
-                //console.log(data);
             },
         });
 
+        // click button - date picker
+        $(".btn").click(function(){
+            var start = $("#start").val();
+            var end = $("#end").val();
+            var path = window.location.pathname;
+            path = path + "?id=" + pair;
+
+            if (start != ""){path = path + "&start=" + start};
+            if (end != ""){path = path + "&end=" + end};
+            $(location).attr('href', path);
+        });
     });
+
+
 </script>
 
 </body>

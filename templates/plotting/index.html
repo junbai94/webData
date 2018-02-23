@@ -9,6 +9,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     {% load static %}
     <script src="{% static 'new.js' %}"></script>
+    <!-- include vue.js framework -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 </head>
 
 <body>
@@ -24,39 +26,50 @@
 <!-- auto populated by JQuery. Each child node is a Plot -->
 <div class="container-fluid">
     <div class="jumbotron"><h1 class="text-center">Index page</h1></div>
+
+    <div id="app">
+        <template v-for="(config, pair) in pairs">
+            <div class="col-sm-4 well">
+                <div v-bind:id="pair">[[asyncCall(pair, config)]]</div>
+                <input type="button" value="Detail" v-on:click="redirect" class="btn"/>
+            </div>
+        </template>
+    </div>
 </div>
 
-
+<!-- Vue.js -->
 <script>
-    $(document).ready(function(){
-        var endpoint = "/plotting/spread/?format=json&technical=BBANDS&id=";
-        var pairs = {{pairs|safe}};
+    var app = new Vue({
+      el: '#app',
+      delimiters: ['[[', ']]'],
+      data: {
+        pairs: {{pairs|safe}},
+      },
+      methods: {
 
-        // plot out all pairs
-        $.each(pairs, function(i, item){
-            var dest = endpoint + item;
-            var div = $("<div class='col-sm-4 well'><div id="+i+"></div></div>");
-            $(".container-fluid").append(div);
-            var r = $('<input type="button" value="Detail" class="btn"/>');
-            r.appendTo(div);
-            $.ajax({
+        redirect: function(){
+            var id = $(event.target).prev().attr('id');
+            $(location).attr('href', "/plotting/detail/?id=" + id);
+        },
+
+        asyncCall: function(pair, config){
+           var dest = "/plotting/spread/?id=" + pair + "&technical=";
+           var period;
+           $.each(config.technical, function(tech, config){
+                period = config.period;
+                dest = dest + tech + "_" + period;
+            });
+           $.ajax({
                 method: "GET",
                 url: dest,
                 success: function(data){
-                    //console.log(data);
-                    array = item.split(',');
+                    array = pair.split(',');
                     title = validName(array[0]) + " vs " + validName(array[1]);
-                    plotBBANDS(String(i), data, 'date', 'spread', 9, title);
+                    plotBBANDS(String(pair), data, 'date', 'spread', period, title);
                 },
             });
-        });
-
-        // re-direct to details
-        $(".btn").click(function(event){
-            var id = $(event.target).prev().attr('id');
-            var pair = pairs[id];
-            $(location).attr('href', "/plotting/detail/?id=" + pair);
-        });
+        },
+      },
     });
 </script>
 

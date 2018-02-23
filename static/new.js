@@ -93,7 +93,6 @@ function plot(dest, data, date, price, title=null){
     var dates = getArray(data, date);
     var plotdata = [];
     var layout = {};
-
     for (var i in price){
         prices = getArray(data, price[i]);
         trace = {
@@ -103,6 +102,38 @@ function plot(dest, data, date, price, title=null){
         };
         plotdata.push(trace);
     };
+
+    if (title != null){
+        var layout = {title: title};
+    }
+    Plotly.newPlot(dest, plotdata, layout);
+};
+
+
+function plotScatter(dest, data, package, date, price, title=null){
+    var dates = getArray(data, date);
+    var layout = {};
+    var k = package.k;
+    var b = package.b;
+    var fitline = [];
+
+    dep = getArray(data, price[0]);
+    indep = getArray(data, price[1])
+    for (var i in indep){
+        fitline.push(indep[i]*k+b);
+    };
+    trace1 = {
+        x: indep,
+        y: dep,
+        name: 'Scatter plot',
+        mode: 'markers',
+    };
+    trace2 = {
+        x: indep,
+        y: fitline,
+        name: 'Fit line',
+    };
+    plotdata = [trace1, trace2]
 
     if (title != null){
         var layout = {title: title};

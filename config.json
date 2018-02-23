@@ -1,0 +1,4 @@
+{"$hc1805,$rb1805": {"technical": {"BBANDS": {"period": 9}}}, 
+"$hc1805,$hc1810": {"technical": {"BBANDS": {"period": 9}}},
+ "$rb1805,$rb1810": {"technical": {"BBANDS": {"period": 9}}},
+ "bs_billet,tr_scrap": {"technical": {"BBANDS": {"period": 9}}}}

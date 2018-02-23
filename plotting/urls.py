@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^spread/$', views.FutSpread.as_view()),
     url(r'^detail/$', views.Detail.as_view()),
     url(r'^regression/$', views.FutRegression.as_view()),
+    url(r'^dev/$', views.Dev.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

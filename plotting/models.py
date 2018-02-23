@@ -18,3 +18,13 @@ class FutDaily(models.Model):
     class Meta:
         db_table = 'fut_daily'
         unique_together = ('instID', 'date', 'exch')
+
+
+class Log(models.Model):
+    datetime = models.DateTimeField(auto_now=True)
+    author = models.CharField(max_length=100, default="Julian")
+    article = models.TextField()
+    pair = models.CharField(max_length=200, default=None)
+
+    class Meta:
+        db_table = 'log'

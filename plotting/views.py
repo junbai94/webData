@@ -8,14 +8,15 @@ import datapy as dy
 from datetime import datetime
 import pandas as pd
 import json
+from django.shortcuts import render, HttpResponseRedirect
 
 # include classes we need
-from .models import FutDaily
-from .serializers import FutDailySerializer
+from .models import FutDaily, Log
+from .serializers import FutDailySerializer, LogSerializer
 from .forms import FutDailyForm
 
 # REST framework class views
-from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.views import APIView
@@ -83,11 +84,14 @@ class APIBase(APIView):
         SUPPORTS = ['BBANDS']
         config = PlottingConfig.techicals_default if not config else config
 
-        for tech in technicals:
-            if tech in SUPPORTS:
-                f = getattr(dy.techie, tech)
-                df = f(df, config[tech].get('period'), config[tech].get('col'))
-        return df.dropna()
+        if technicals:
+            for tech in technicals:
+                if tech in SUPPORTS:
+                    f = getattr(dy.techie, tech)
+                    df = f(df, config[tech].get('period'), config[tech].get('col'))
+            return df.dropna()
+
+        return df
 
 
     def parse_query(self):
@@ -113,6 +117,9 @@ class APIBase(APIView):
             if '$' in id_:
                 id_ = id_.replace('$', '')
                 df = dy.get_data(id_, id_, 'fut_daily', frm=start, to=end)
+            # elif '!' in id_:
+            #     id_ = id_.replace('!', '')
+            #     df = dy.get_cont_contract(id_, 1, '2000-01-01', '2100-01-01', name=id_)
             else:
                 df = dy.get_data(id_, id_, frm=start, to=end)
             output.append(df)
@@ -136,11 +143,17 @@ class FutSpread(APIBase):
     """
     def get(self, request, format=None):
         technicals = self.parse('technical')
+        name = list()
+        config = dict()
+        for tech in technicals:
+            tech_name, period = tech.split('_')
+            name.append(tech_name)
+            config[tech_name] = {'period': int(period), 'col': 'spread'}
 
         df = self.parse_query()
         id0, id1 = self._get_ids()
         df['spread'] = df[id0] - df[id1]
-        df = self._handle_techincal(technicals, df)
+        df = self._handle_techincal(name, df, config=config)
         data = df.to_dict(orient='records')
         return Response(data)
 
@@ -155,12 +168,23 @@ class FutRegression(APIBase):
         reg = dy.Regression(df, dep, indep)
         df = reg.df.copy()
         df['resid'] = reg.result.resid
+        cadf = dy.adfuller(reg.result.resid)
+        if cadf[0] <= cadf[4]['5%']:
+            boolean = 'likely'
+        else:
+            boolean = 'unlikely'
+        if boolean == 'likely':
+            period = dy.half_life(reg.result.resid)
+        else:
+            period = 'N.A.'
         data = {
             'package': {
                 'k': reg.result.params[1],
                 'b': reg.result.params[0],
                 'rsqr': reg.result.rsquared,
                 'std': reg.result.resid.std(),
+                'reversion': boolean,
+                'period': period,
             },
             'data': df.to_dict(orient='records')
         }
@@ -174,9 +198,9 @@ class Charter(APIBase):
     template_name = 'plotting/index.html'
 
     def get(self, request):
-        target = ['$hc1805,$rb1805', '$hc1805,$hc1810', '$rb1805,$rb1810', '$i1805,$i1810',
-                  'bs_billet,tr_scrap', ]
-        pairs = json.dumps(target)
+        with open('config.json', 'r') as f:
+            pairs = json.load(f)
+        pairs = json.dumps(pairs)
         return Response({'pairs': pairs})
 
 
@@ -191,4 +215,25 @@ class Detail(APIBase):
         return Response({'pair': pair,
                          'start':start,
                          'end': end,})
+
+
+##############################################################################################
+# Dev
+##############################################################################################
+class Dev(APIBase):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'plotting/dev.html'
+
+    def get(self, request, format=None):
+        logs = Log.objects.all()
+        serializer = LogSerializer(logs, many=True)
+        content = JSONRenderer().render(serializer.data)
+        return Response({'logs':content})
+
+    def post(self, request, format=None):
+        serializer = LogSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return HttpResponseRedirect('/plotting/dev/')
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 

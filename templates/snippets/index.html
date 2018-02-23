@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    {% load static %}
+    <script src="{% static 'new.js' %}"></script>
+
+    <!-- include vue.js framework -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+</head>
+
+<body>
+
+<!-- basic functions of vue.js -->
+<div class="container-fluid">
+    <div class="jumbotron">
+        <h1 class="text-center">Index page</h1>
+        <strong class="text-center">This page is for learning Vue.js framework</strong>
+    </div>
+
+
+    <div class="jumbotron" id="app">
+        <p> basically pass a data to a field</p>
+        <h1 class="text-center">[[ message ]]</h1>
+    </div>
+
+    <div class="jumbotron" id="app-2">
+        <span v-bind:title="message">
+            Hover mouse over me for a few seconds to see my dynamically bound title
+        </span>
+    </div>
+
+    <div class="jumbotron" id="app-3">
+        <p> This section studies conditionals in vue.js</p>
+        <span v-if="seen">Now you see me</span>
+    </div>
+
+    <div class="jumbotron" id="app-4">
+        <p>This section illustrates for loop</p>
+        <ol>
+            <li v-for="todo in todos">
+                [[ todo.text ]]
+            </li>
+        </ol>
+    </div>
+
+    <div class="jumbotron" id="app-5">
+        <p>This section handles user inputs</p>
+        <p>[[ message ]]</p>
+        <button v-on:click="reverseMessage">Reverse Message</button>
+    </div>
+
+    <div class="jumbotron" id="app-6">
+        <p>This section also handles user input</p>
+        <p>[[message]]</p>
+        <input v-model="message"/>
+    </div>
+</div>
+
+<!-- components tutorials -->
+<div class="container-fluid">
+    <div class="jumbotron">
+        <h1 class="text-center">A new section</h1>
+        <p class="text-center">This section learns component system of vue.js</p>
+    </div>
+
+    <div id="app-7">
+        <template v-for="(config, pair) in items">
+            <div class="jumbotron">
+                <p v-bind:id="pair">[[properName(pair)]]: [[config]]</p>
+            </div>
+        </template>
+    </div>
+</div>
+
+</body>
+
+<!-- scripts for basic vue.js functions -->
+<script>
+    var app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app',
+        data: {
+            message: 'Hello Vue!',
+        },
+    });
+
+    var app2 = new Vue({
+        el: '#app-2',
+        data: {
+            message: 'You loaded this page on ' + new Date().toLocaleString(),
+        },
+    });
+
+    var app3 = new Vue({
+        el: '#app-3',
+        data: {
+            seen: true,
+        },
+    });
+
+    var app4 = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app-4',
+        data: {
+            todos: [
+                {text: 'Learn Javascript'},
+                {text: 'Learn Vue'},
+                {text: 'Building something awesome'},
+            ],
+        },
+    });
+
+    var app5 = new Vue({
+        delimiters: ['[[', ']]'],
+        el: "#app-5",
+        data: { message: 'Hello Vue.js' },
+        methods: {
+            reverseMessage: function(){
+                this.message = this.message.split('').reverse().join('');
+            },
+        },
+    });
+
+    var app6 = new Vue({
+        delimiters: ['[[', ']]'],
+        el: "#app-6",
+        data: {
+            message: 'Hello Vue!',
+        },
+    });
+</script>
+
+<!-- define components -->
+<script>
+    var pairs = {'$hc1805,$rb1805': {'technical': 'haha'}, '$hc1805,$hc1810': {'technical': 'gaga'},};
+
+    var app7 = new Vue({
+      el: '#app-7',
+      delimiters: ['[[', ']]'],
+      data: {
+        items: pairs,
+      },
+      methods: {
+        properName: validName,
+      },
+    });
+</script>
+</html>

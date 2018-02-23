@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dev</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    {% load static %}
+    <script src="{% static 'new.js' %}"></script>
+
+    <!-- include vue.js framework -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+</head>
+
+<body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container">
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="{% url 'index' %}">Home</a></li>
+        </ul>
+    </div>
+</nav>
+
+
+<div class="container-fluid">
+    <div class="jumbotron"><h1 class="text-center">Development page</h1></div>
+
+    <div class="jumbotron" id="app">
+        <h3 class="text-center">Display all logs</h3>
+        <ul>
+            <li v-for="log in logs">
+                [[log.article]] - [[log.author]]
+            </li>
+        </ul>
+    </div>
+
+    <div class="jumbotron">
+        <h3 class="text-center">A form for log inputs</h3>
+
+        <form class="form-group" action="/plotting/dev/" method="post">
+            {% csrf_token %}
+            <label for="author" >Name:</label><br/>
+            <input type="text" class=form-control" name="author" id="author"/><br/>
+            <label for="article">Comments: </label>
+            <textarea class="form-control" row="5" id="article" name="article"></textarea>
+            <input type="hidden" name="pair" id="pair" /><br/>
+            <input type="submit" value="Submit" />
+        </form>
+    </div>
+</div>
+
+
+<script>
+    var app = new Vue({
+        el: "#app",
+        delimiters: ['[[', ']]'],
+        data: {
+            logs: {{logs|safe}},
+        },
+    });
+</script>
+
+</body>
+</html>
