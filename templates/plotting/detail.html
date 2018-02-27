@@ -16,6 +16,8 @@
 
     {% load static %}
     <script src="{% static 'new.js' %}"></script>
+    <!-- include vue.js framework -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 </head>
 
 <body>
@@ -52,7 +54,7 @@
             </div>
         </div>
         <div class="col-sm-3">
-            <button type="button" class="btn btn-default">Calculate</button>
+            <button type="button" class="btn btn-default" id="picker">Calculate</button>
         </div>
     </div>
 
@@ -101,23 +103,68 @@
         </div>
     </div>
 
-    <hr class="style2" />
-
-    <!-- spread graph here -->
-    <!--
-    <div class="jumbotron"><h1 class="text-center">Spread Graph</h1></div>
-    <div class="row">
-        <div class="col-sm-12 well"><div id="spread"></div></div>
+    <!-- display logs and submit form -->
+    <div id="app">
+        <div class="jumbotron">
+            <h3 class="text-center">All logs</h3>
+            <ul v-if="logs.length>0">
+                <li v-for="log in logs">
+                    [[log.article]] - [[log.author]]
+                </li>
+            </ul>
+            <p v-else>No logs found</p>
+        </div>
+        <button v-on:click="changeText()" type="button" class="btn btn-info" data-toggle="collapse" data-target="#form">
+                [[prompt]]
+        </button>
+        <div class="jumbotron collapse" id="form">
+            <h3 class="text-center">A form for log inputs</h3>
+            <form class="form-group" action="/plotting/logs/" method="post">
+                {% csrf_token %}
+                <label for="author" >Name:</label><br/>
+                <input type="text" class=form-control" name="author" id="author"/><br/>
+                <label for="article">Comments: </label>
+                <textarea class="form-control" row="5" id="article" name="article"></textarea>
+                <input v-model="pair" type="hidden" name="pair" id="pair" /><br/>
+                <input type="submit" value="Submit" />
+            </form>
+        </div>
     </div>
-    //-->
 
     <!-- page footer -->
+    <hr class="style2" />
     <ul class="pager">
         <li><a href="#">Top</a></li>
     </ul>
 </div>
 
-
+<!-- Vue.js scripts -->
+<script>
+    var app = new Vue({
+        el: "#app",
+        delimiters: ['[[', ']]'],
+        data: {
+            prompt: "Add a log",
+            logs: {{logs|safe}},
+        },
+        computed: {
+            pair: function(){
+                return "{{pair}}"
+            },
+        },
+        methods: {
+            changeText: function(){
+                if(this.prompt == "Add a log"){
+                    this.prompt = "Hide";
+                }
+                else{
+                    this.prompt = "Add a log";
+                }
+            },
+        },
+    });
+</script>
+<!-- JQuery -->
 <script>
     $(document).ready(function(){
         $('.input-group.date').datepicker({format: "yyyymmdd"});
@@ -138,7 +185,6 @@
             success: function(output){
                 data = output.data;
                 package = output.package;
-                console.log(package);
                 // plotting graphs
                 plotSpread('resid', data, package, title='Residual');   // Residual plot
                 plot('graph', data, 'date', [dep, indep], title='Price Graphs');         // Price Plot
@@ -154,7 +200,7 @@
         });
 
         // click button - date picker
-        $(".btn").click(function(){
+        $(".btn.btn-default").click(function(){
             var start = $("#start").val();
             var end = $("#end").val();
             var path = window.location.pathname;
@@ -165,8 +211,6 @@
             $(location).attr('href', path);
         });
     });
-
-
 </script>
 
 </body>

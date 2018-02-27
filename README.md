@@ -1,0 +1,1 @@
+Update DB_DIR variable to your database path in webData.settings module

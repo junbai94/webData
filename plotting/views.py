@@ -2,9 +2,7 @@
 from __future__ import unicode_literals
 
 from .apps import PlottingConfig
-import sys
-sys.path.append(PlottingConfig.datapy)
-import datapy as dy
+from utils import datapy as dy
 from datetime import datetime
 import pandas as pd
 import json
@@ -120,6 +118,8 @@ class APIBase(APIView):
             # elif '!' in id_:
             #     id_ = id_.replace('!', '')
             #     df = dy.get_cont_contract(id_, 1, '2000-01-01', '2100-01-01', name=id_)
+            elif id_ in ['hrc_china_fob']:
+                df = dy.get_data(id_, id_, frm=start, to=end, conversion=('USD', 'CNY'))
             else:
                 df = dy.get_data(id_, id_, frm=start, to=end)
             output.append(df)
@@ -143,17 +143,23 @@ class FutSpread(APIBase):
     """
     def get(self, request, format=None):
         technicals = self.parse('technical')
+        weight = self.parse('weight')
         name = list()
         config = dict()
-        for tech in technicals:
-            tech_name, period = tech.split('_')
-            name.append(tech_name)
-            config[tech_name] = {'period': int(period), 'col': 'spread'}
+        if technicals:
+            for tech in technicals:
+                tech_name, period = tech.split('_')
+                name.append(tech_name)
+                config[tech_name] = {'period': int(period), 'col': 'spread'}
 
         df = self.parse_query()
         id0, id1 = self._get_ids()
+        if weight:
+            df[id0] = df[id0] * float(weight[0])
+            df[id1] = df[id1] * float(weight[1])
         df['spread'] = df[id0] - df[id1]
-        df = self._handle_techincal(name, df, config=config)
+        if technicals:
+            df = self._handle_techincal(name, df, config=config)
         data = df.to_dict(orient='records')
         return Response(data)
 
@@ -190,6 +196,21 @@ class FutRegression(APIBase):
         }
         return Response(data)
 
+
+class LogAPI(APIView):
+    def get(self, request, format=None):
+        logs = Log.objects.all()
+        serializer = LogSerializer(logs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = LogSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return HttpResponseRedirect('/plotting/logs/')
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 #############################################################################################
 # Views
 #############################################################################################
@@ -212,28 +233,27 @@ class Detail(APIBase):
         pair = self.request.query_params.get('id', '')
         start = self.request.query_params.get('start', '')
         end = self.request.query_params.get('end', '')
-        return Response({'pair': pair,
-                         'start':start,
-                         'end': end,})
+        logs = Log.objects.filter(pair=pair)
+        serializer = LogSerializer(logs, many=True)
+        content = JSONRenderer().render(serializer.data)
+        return Response({
+            'pair': pair,
+            'start':start,
+            'end': end,
+            'logs': content,
+        })
 
 
 ##############################################################################################
 # Dev
 ##############################################################################################
-class Dev(APIBase):
+class Dev(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'plotting/dev.html'
 
     def get(self, request, format=None):
-        logs = Log.objects.all()
-        serializer = LogSerializer(logs, many=True)
-        content = JSONRenderer().render(serializer.data)
-        return Response({'logs':content})
-
-    def post(self, request, format=None):
-        serializer = LogSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return HttpResponseRedirect('/plotting/dev/')
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        with open('C:/Users/j291414/Desktop/test.json', 'r') as f:
+            test = json.load(f)
+        test = json.dumps(test)
+        return Response({'context': test})
 

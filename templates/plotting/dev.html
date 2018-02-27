@@ -25,43 +25,59 @@
 </nav>
 
 
+<!-- auto populated by JQuery. Each child node is a Plot -->
 <div class="container-fluid">
-    <div class="jumbotron"><h1 class="text-center">Development page</h1></div>
+    <div class="jumbotron"><h1 class="text-center">Index page</h1></div>
 
-    <div class="jumbotron" id="app">
-        <h3 class="text-center">Display all logs</h3>
-        <ul>
-            <li v-for="log in logs">
-                [[log.article]] - [[log.author]]
-            </li>
-        </ul>
-    </div>
-
-    <div class="jumbotron">
-        <h3 class="text-center">A form for log inputs</h3>
-
-        <form class="form-group" action="/plotting/dev/" method="post">
-            {% csrf_token %}
-            <label for="author" >Name:</label><br/>
-            <input type="text" class=form-control" name="author" id="author"/><br/>
-            <label for="article">Comments: </label>
-            <textarea class="form-control" row="5" id="article" name="article"></textarea>
-            <input type="hidden" name="pair" id="pair" /><br/>
-            <input type="submit" value="Submit" />
-        </form>
+    <div id="app">
+        <template v-for="item in pairs">
+            <div class="col-sm-4 well">
+                <div v-bind:id="item.pair">[[asyncCall(item)]]</div>
+                <input type="button" v-on:click="redirect" value="Detail" class="btn"/>
+            </div>
+        </template>
     </div>
 </div>
 
-
+<!-- Vue.js -->
 <script>
     var app = new Vue({
-        el: "#app",
-        delimiters: ['[[', ']]'],
-        data: {
-            logs: {{logs|safe}},
+      el: '#app',
+      delimiters: ['[[', ']]'],
+      data: {
+        pairs: {{context|safe}},
+      },
+      methods: {
+        redirect: function(){
+            var id = $(event.target).prev().attr('id');
+            $(location).attr('href', "/plotting/detail/?id=" + id);
         },
+
+        asyncCall: function(item){
+           var pair = item.pair;
+           var dest = "/plotting/spread/?id=" + pair + "&technical=";
+           var period;
+           $.each(item.technical, function(tech, config){
+                period = config.period;
+                dest = dest + tech + "_" + period;
+            });
+           if (item.weight != null){
+                var weight1 = item.weight[0];
+                var weight2 = item.weight[1];
+                dest = dest + "&weight=" + weight1 + "," + weight2;
+           };
+           $.ajax({
+                method: "GET",
+                url: dest,
+                success: function(data){
+                    array = pair.split(',');
+                    title = validName(array[0]) + " vs " + validName(array[1]);
+                    plotBBANDS(String(pair), data, 'date', 'spread', period, title);
+                },
+            });
+        },
+      },
     });
 </script>
-
 </body>
 </html>

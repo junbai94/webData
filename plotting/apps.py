@@ -6,7 +6,6 @@ from django.apps import AppConfig
 
 class PlottingConfig(AppConfig):
     name = 'plotting'
-    datapy = "C:/Users/j291414/my algorithms"
     techicals_default = {
         'BBANDS': {
             'col': 'spread',

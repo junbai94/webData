@@ -1,4 +1,5 @@
-{"$hc1805,$rb1805": {"technical": {"BBANDS": {"period": 9}}}, 
-"$hc1805,$hc1810": {"technical": {"BBANDS": {"period": 9}}},
- "$rb1805,$rb1810": {"technical": {"BBANDS": {"period": 9}}},
- "bs_billet,tr_scrap": {"technical": {"BBANDS": {"period": 9}}}}
+[{"pair": "$hc1805,$rb1805", "technical": {"BBANDS": {"period": 9}}},
+{"pair": "$hc1805,$hc1810", "technical": {"BBANDS": {"period": 9}}},
+{"pair": "$rb1805,$rb1810", "technical": {"BBANDS": {"period": 9}}},
+{"pair": "bs_billet,tr_scrap", "technical": {"BBANDS": {"period": 9}}},
+{"pair": "hrc_china_fob,$hc1805", "weight": [0.9231, 1.0], "technical": {"BBANDS": {"period": 9}}}]

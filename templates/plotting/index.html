@@ -28,10 +28,10 @@
     <div class="jumbotron"><h1 class="text-center">Index page</h1></div>
 
     <div id="app">
-        <template v-for="(config, pair) in pairs">
+        <template v-for="item in pairs">
             <div class="col-sm-4 well">
-                <div v-bind:id="pair">[[asyncCall(pair, config)]]</div>
-                <input type="button" value="Detail" v-on:click="redirect" class="btn"/>
+                <div v-bind:id="item.pair">[[asyncCall(item)]]</div>
+                <input type="button" v-on:click="redirect" value="Detail" class="btn"/>
             </div>
         </template>
     </div>
@@ -46,19 +46,24 @@
         pairs: {{pairs|safe}},
       },
       methods: {
-
         redirect: function(){
             var id = $(event.target).prev().attr('id');
             $(location).attr('href', "/plotting/detail/?id=" + id);
         },
 
-        asyncCall: function(pair, config){
+        asyncCall: function(item){
+           var pair = item.pair;
            var dest = "/plotting/spread/?id=" + pair + "&technical=";
            var period;
-           $.each(config.technical, function(tech, config){
+           $.each(item.technical, function(tech, config){
                 period = config.period;
                 dest = dest + tech + "_" + period;
             });
+           if (item.weight != null){
+                var weight1 = item.weight[0];
+                var weight2 = item.weight[1];
+                dest = dest + "&weight=" + weight1 + "," + weight2;
+           };
            $.ajax({
                 method: "GET",
                 url: dest,
